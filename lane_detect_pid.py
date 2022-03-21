@@ -14,11 +14,15 @@ servo2=GPIO.PWM(6,50) #50 = 50HZ PULSE
 #set pin 5(bcm) as servo pin
 GPIO.setup(5,GPIO.OUT)
 servo3=GPIO.PWM(5,50) #50 = 50HZ PULSE
+#set pin 27(bcm) as servo pin for drive
+GPIO.setup(27,GPIO.OUT)
+servo4=GPIO.PWM(27,50) #50 = 50HZ PULSE
 
 #initial servo
 servo1.start(0)
 servo2.start(0)
 servo3.start(0)
+servo4.start(0)
 print("waiting for 2 seconds")
 time.sleep(2)
 #motor drive set
@@ -124,6 +128,11 @@ def servo_3(dc):
     time.sleep(0.3)
     servo3.ChangeDutyCycle(0)
     time.sleep(0.7)
+def servo_4_guide(theta):
+    servo4.ChangeDutyCycle(theta)
+    time.sleep(0.3)
+    servo4.ChangeDutyCycle(0)
+    time.sleep(0.2)
 #循迹前进motor set
 def lane_following(Lmotor_speed,Rmotor_speed,t_time):
     #左轮设置
@@ -166,7 +175,13 @@ def activator(u):
         u_r=0
     lane_following(u_l,u_r,0)
 
-
+def servo_guide(u):
+    theta=7+u/10
+    if theta>11:
+        theta=11
+    if theta<4:
+        theta=4
+    servo_4_guide(theta)
 
 Path_Detct_px_sum = 0 #坐标值求和
 while 1:
@@ -179,22 +194,24 @@ while 1:
             Path_Detct_px_sum=Path_Detct_px_sum+j
             Path_Detct_fre_count = Path_Detct_fre_count+1
     Path_Detect_px = int((Path_Detct_px_sum)/(Path_Detct_fre_count))
-    cv.circle(frame,(Path_Detect_px,200),10,(0,255,0),thickness=2)
-    cv.imshow("reference point",frame)
+    #cv.circle(frame,(Path_Detect_px,200),10,(0,255,0),thickness=2)
+    #cv.imshow("reference point",frame)
     #cv.imshow("gray",gray)
     #cv.imshow("thresh",thresh1)
     if cv.waitKey(1)&0XFF==ord('q'):
         break
     #pid function
     current_err= ref_center-Path_Detect_px
-    print(current_err)
+    print("current error is :",current_err)
     total_err=total_err+current_err
     pid_output= kp*current_err+ki*total_err+kd*(current_err-last_err) #实际中有Δt，由于kd和ki均为固定参数，且循环频率基本固定，
     # 可以直接等效为某一个固定值。
     last_err=current_err
     u=pid_output #输出值直接传递给速度
     #执行器采用该输出值u
-    activator(u)
+    #activator(u)
+    #servo_guide
+    servo_guide(u)
     #initialize
     Path_Detct_px_sum = 0
 video.release()

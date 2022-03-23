@@ -62,13 +62,13 @@ def motor_forward():
 
 # motor_stop function
 def motor_stop():
-    print("motor backward")
+    print("motor stop")
     GPIO.output(ENA, True)
     GPIO.output(ENB, True)
-    GPIO.output(ENA, False)
-    GPIO.output(ENA, False)
-    GPIO.output(ENA, False)
-    GPIO.output(ENA, False)
+    GPIO.output(IN1, False)
+    GPIO.output(IN2, False)
+    GPIO.output(IN3, False)
+    GPIO.output(IN4, False)
     time.sleep(1)
 
 
@@ -76,7 +76,7 @@ def motor_stop():
 def motor_backward():
     print("motor backward")
     GPIO.output(ENA, True)
-    GPIO.output(ENA, True)
+    GPIO.output(ENB, True)
     GPIO.output(IN1, False)
     GPIO.output(IN2, True)
     GPIO.output(IN3, False)
@@ -84,10 +84,10 @@ def motor_backward():
 
 
 # turnleft_function
-def motor_left():
-    print("motor left")
+def motor_right():
+    print("motor right")
     GPIO.output(ENA, True)
-    GPIO.output(ENA, True)
+    GPIO.output(ENB, True)
     GPIO.output(IN1, True)
     GPIO.output(IN2, False)
     GPIO.output(IN3, False)
@@ -96,10 +96,10 @@ def motor_left():
 
 
 # turnright_function
-def motor_right():
+def motor_left():
     print("motor left")
     GPIO.output(ENA, True)
-    GPIO.output(ENA, True)
+    GPIO.output(ENB, True)
     GPIO.output(IN1, False)
     GPIO.output(IN2, True)
     GPIO.output(IN3, True)
@@ -147,15 +147,15 @@ def lane_following(Lmotor_speed,Rmotor_speed,t_time):
 
 
 # Initialize webcam feed
-video = cv.VideoCapture("lane.mp4")
-print(video.get(3))#1280
-print(video.get(4))#720
+video = cv.VideoCapture(0)#0 or video lane.mp4
+print(video.get(3))#1280 picamera 640
+print(video.get(4))#720  480
 
 #PID参数初始化
 kp=0.85
 ki=0
 kd=0
-ref_center=1280/2
+ref_center=640/2
 last_err=0
 total_err= 0 #积分
 pid_output=0
@@ -189,16 +189,17 @@ while 1:
     gray = cv.cvtColor(frame,cv.COLOR_RGB2GRAY)
     _,thresh1 = cv.threshold(gray,60,255,cv.THRESH_BINARY)
     Path_Detct_fre_count = 1
-    for j in range(0,1280,5):
+    for j in range(0,640,5):
         if thresh1[200,j]==0:
             Path_Detct_px_sum=Path_Detct_px_sum+j
             Path_Detct_fre_count = Path_Detct_fre_count+1
     Path_Detect_px = int((Path_Detct_px_sum)/(Path_Detct_fre_count))
-    #cv.circle(frame,(Path_Detect_px,200),10,(0,255,0),thickness=2)
-    #cv.imshow("reference point",frame)
+    cv.circle(frame,(Path_Detect_px,200),10,(0,255,0),thickness=2)
+    cv.imshow("reference point",frame)
     #cv.imshow("gray",gray)
     #cv.imshow("thresh",thresh1)
     if cv.waitKey(1)&0XFF==ord('q'):
+        motor_stop()
         break
     #pid function
     current_err= ref_center-Path_Detect_px
@@ -209,9 +210,10 @@ while 1:
     last_err=current_err
     u=pid_output #输出值直接传递给速度
     #执行器采用该输出值u
-    #activator(u)
+    #motot drive guide
+    activator(u)
     #servo_guide
-    servo_guide(u)
+    #servo_guide(u)
     #initialize
     Path_Detct_px_sum = 0
 video.release()

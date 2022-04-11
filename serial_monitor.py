@@ -1,18 +1,39 @@
 import serial
 import time
+import threading
+ser = serial.Serial("COM3",9600,timeout=0.5)
+ser.flushInput()
+def serial_read():
 
-serialPort = "COM3"  # 串口
-baudRate = 9600  # 波特率
-ser = serial.Serial(serialPort, baudRate, timeout=0.5)
-print("参数设置：串口=%s ，波特率=%d" % (serialPort, baudRate))
+    count = ser.inWaiting()
+    if count != 0:
+        recv = ser.read(ser.in_waiting).decode("utf-8")
+        print(time.time()," --- recv --->",recv)
+    time.sleep(1)
+
+def serial_send(text):
+    ser.write((text + '\r\n').encode())
+
+class serial_read(threading.Thread):
+    def __init__(self, threadID, name):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+
+    def run(self):
+        while 1:
+            count = ser.inWaiting()
+            if count != 0:
+                recv = ser.readline().decode("gbk")
+                print("distance is ",recv)
 
 
-while 1:
-    if ser.in_waiting:
-        str1 = ser.readline().decode("gbk")
+thread_serialread = serial_read("0","serial read")
+thread_serialread.start()
 
-        print(str1)
-
+if __name__ == '__main__':
+    while 1:
+        time.sleep(1)
 
 
 

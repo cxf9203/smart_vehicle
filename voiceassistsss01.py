@@ -23,10 +23,10 @@ FORMAT = pyaudio.paInt16  # 每次采集的位数
 CHANNELS = 1  # 声道数
 RATE = 16000  # 采样率：每秒采集数据的次数
 cmd = ""
-URL="wss://nls-gateway.cn-shanghai.aliyuncs.com/ws/v1"
-AKID = "LTAI5tGc71aLV5sMmb6mQLCp"
-AKKEY = "XPimfUwDi08jI2fWFG1SVzZAJHpr2F"
-APPKEY = "m9qkQFFc0ynOzTO0"
+URL="wss://nls-gateway.cn-
+AKID = "LTAI5tGc71aLV5sMmb
+AKKEY = "XPimfUwDi08jI2
+APPKEY = "m9q
 TEXT=''
 def listeningfunc():
     with m as source:
